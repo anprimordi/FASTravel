@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1028053195232",
+    "firebase_url": "https://fastravel-9e367.firebaseio.com",
+    "project_id": "fastravel-9e367",
+    "storage_bucket": "fastravel-9e367.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1028053195232:android:6c435f0c1261fee1",
+        "android_client_info": {
+          "package_name": "com.example.ahmadnprimordi.fastravel"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1028053195232-lghi75un77n6qq3ov3kjr5egnh6e4g88.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ahmadnprimordi.fastravel",
+            "certificate_hash": "2667bd922fe7e3661e0db8d0913987f696a4caae"
+          }
+        },
+        {
+          "client_id": "1028053195232-6emv4tt01263stbhetkia3lv6ms849v6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKtaMrWR-bNYFGkm4X9N7yLHL9UYz8N6w"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1028053195232-6emv4tt01263stbhetkia3lv6ms849v6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
