@@ -102,6 +102,7 @@ public class MapsActivity extends FragmentActivity implements
         setUpLocation();
     }
 
+    //problematic
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode){
