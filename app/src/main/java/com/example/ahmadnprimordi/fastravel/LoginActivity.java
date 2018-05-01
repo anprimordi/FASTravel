@@ -1,139 +1,244 @@
 package com.example.ahmadnprimordi.fastravel;
 
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.Button;
+import android.widget.RelativeLayout;
 
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
+import com.example.ahmadnprimordi.fastravel.POJO.User;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.rengwuxian.materialedittext.MaterialEditText;
+
+import dmax.dialog.SpotsDialog;
 
 public class LoginActivity extends AppCompatActivity {
 
-    SignInButton signInButton;
+    Button btnSignIn, btnRegister;
+
+    RelativeLayout rootLayout;
     FirebaseAuth mAuth;
-    GoogleApiClient mGoogleApiClient;
-    GoogleSignInClient mGoogleSignInClient;
-    FirebaseAuth.AuthStateListener mAuthListener;
-
-    private final static int RC_SIGN_IN = 2;
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        mAuth.addAuthStateListener(mAuthListener);
-    }
+    FirebaseDatabase db;
+    DatabaseReference users;
+    DatabaseReference drivers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        signInButton = findViewById(R.id.btn_googleSignIn);
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseDatabase.getInstance();
+        users = db.getReference("Users");
+        drivers = db.getReference("Drivers");
 
-        signInButton.setOnClickListener(new View.OnClickListener() {
+        btnRegister = findViewById(R.id.btn_register);
+        btnSignIn = findViewById(R.id.btn_signIn);
+        rootLayout = findViewById(R.id.login_rootLayout);
+
+        btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                showRegisterDialog();
+            }
+        });
+        
+        btnSignIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showSignInDialog();
             }
         });
 
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
+    }
+
+    private void showSignInDialog() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle("SIGN IN");
+        dialog.setMessage("Please use email to Sign In");
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View login_layout = inflater.inflate(R.layout.layout_signin, null);
+
+        final MaterialEditText edtEmail = login_layout.findViewById(R.id.edt_email);
+        final MaterialEditText edtPassword = login_layout.findViewById(R.id.edt_password);
+
+        dialog.setView(login_layout);
+
+        dialog.setPositiveButton("SIGN IN", new DialogInterface.OnClickListener() {
             @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                if (firebaseAuth.getCurrentUser() != null){
-                    startActivity(new Intent( LoginActivity.this, MainActivity.class));
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+
+                //menghilangkan Sign In button saat proses login
+                btnSignIn.setEnabled(false);
+
+                //Cek Validasi
+                if (TextUtils.isEmpty(edtEmail.getText().toString())){
+                    Snackbar.make(rootLayout, "Please enter valid email address", Snackbar.LENGTH_SHORT).show();
+
+                    return;
                 }
+
+                if (TextUtils.isEmpty(edtPassword.getText().toString())){
+                    Snackbar.make(rootLayout, "Please enter valid password", Snackbar.LENGTH_SHORT).show();
+
+                    return;
+                }
+
+                if (edtPassword.getText().toString().length() < 6){
+                    Snackbar.make(rootLayout, "Too short", Snackbar.LENGTH_SHORT).show();
+
+                    return;
+                }
+
+                final SpotsDialog waitingDialog = new SpotsDialog(LoginActivity.this);
+                waitingDialog.show();
+
+                //Sign In
+                mAuth.signInWithEmailAndPassword(edtEmail.getText().toString(),edtPassword.getText().toString())
+                        .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                            @Override
+                            public void onSuccess(AuthResult authResult) {
+                                waitingDialog.dismiss();
+                                startActivity(new Intent(LoginActivity.this, MapsActivity.class));
+                                finish();
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                waitingDialog.dismiss();
+                                Snackbar.make(rootLayout, "Failed" + e.getMessage(), Snackbar.LENGTH_SHORT)
+                                        .show();
+
+                                //mengaktifkan kembali sign in button saat gagal
+                                btnSignIn.setEnabled(true);
+                            }
+                        });
             }
-        };
+        });
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this /* FragmentActivity*/, new GoogleApiClient.OnConnectionFailedListener() {
-                    @Override
-                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                        Toast.makeText(LoginActivity.this, "Something went wrong!",Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addApi(Auth.GOOGLE_SIGN_IN_API,gso)
-                .build();
-
-
-
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-
-    }
-
-
-
-    private void signIn() {
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-        startActivityForResult(signInIntent, RC_SIGN_IN);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
-        if (requestCode == RC_SIGN_IN) {
-            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            if (result.isSuccess()) {
-                // Google Sign In was successful, authenticate with Firebase
-                GoogleSignInAccount account = result.getSignInAccount();
-                firebaseAuthWithGoogle(account);
-            } else {
-                Toast.makeText(LoginActivity.this, "Authorization went wrong!",Toast.LENGTH_SHORT).show();
+        dialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
             }
-        }
+        });
+
+        dialog.show();
     }
 
-    private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d("TAG", "signInWithCredential:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            //updateUI(user);
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w("TAG", "signInWithCredential:failure", task.getException());
-                            Toast.makeText(LoginActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                            //updateUI(null);
-                        }
 
-                        // ...
+    private void showRegisterDialog() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle("REGISTER");
+        dialog.setMessage("Please use email to register");
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View register_layout = inflater.inflate(R.layout.layout_register, null);
+
+        final MaterialEditText edtEmail = register_layout.findViewById(R.id.edt_email);
+        final MaterialEditText edtPassword = register_layout.findViewById(R.id.edt_password);
+        final MaterialEditText edtName = register_layout.findViewById(R.id.edt_name);
+        final MaterialEditText edtPhone = register_layout.findViewById(R.id.edt_phone);
+
+        dialog.setView(register_layout);
+
+        dialog.setPositiveButton("REGISTER", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+
+                if (TextUtils.isEmpty(edtEmail.getText().toString())){
+                    Snackbar.make(rootLayout, "Please enter valid email address", Snackbar.LENGTH_SHORT).show();
+
+                    return;
+                }
+
+                if (TextUtils.isEmpty(edtPassword.getText().toString())){
+                    Snackbar.make(rootLayout, "Please enter valid password", Snackbar.LENGTH_SHORT).show();
+
+                    return;
+                }
+
+                if (edtPassword.getText().toString().length() < 6){
+                    Snackbar.make(rootLayout, "Too short", Snackbar.LENGTH_SHORT).show();
+
+                    return;
+                }
+
+                if (TextUtils.isEmpty(edtName.getText().toString())){
+                    Snackbar.make(rootLayout, "Please enter name", Snackbar.LENGTH_SHORT).show();
+
+                    return;
+                }
+
+                if (TextUtils.isEmpty(edtPhone.getText().toString())){
+                    Snackbar.make(rootLayout, "Please enter phone number", Snackbar.LENGTH_SHORT).show();
+
+                    return;
+                }
+
+                mAuth.createUserWithEmailAndPassword(
+                        edtEmail.getText().toString(),
+                        edtPassword.getText().toString())
+                        .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                            @Override
+                            public void onSuccess(AuthResult authResult) {
+                                //simpan user ke database db
+                                User user = new User();
+                                user.setName(edtName.getText().toString());
+                                user.setPhone(edtPhone.getText().toString());
+                                user.setEmail(edtEmail.getText().toString());
+                                user.setPassword(edtPassword.getText().toString());
+
+                                users.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                        .setValue(user)
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                Snackbar.make(rootLayout, "SUCCESS", Snackbar.LENGTH_SHORT).show();
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Snackbar.make(rootLayout, "FAILED", Snackbar.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
+                        })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Snackbar.make(rootLayout, "FAILED", Snackbar.LENGTH_SHORT).show();
                     }
                 });
+            }
+        });
 
+        dialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
     }
+
 
 }

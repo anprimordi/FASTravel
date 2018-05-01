@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimaryDark"
+    android:id="@+id/login_rootLayout"
     tools:context=".LoginActivity">
 
     <TextView
@@ -31,42 +32,42 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <com.google.android.gms.common.SignInButton
-        android:id="@+id/btn_googleSignIn"
-        android:layout_centerHorizontal="true"
-        android:layout_above="@id/txt_rider_app"
-        android:layout_margin="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"></com.google.android.gms.common.SignInButton>
-
-    <!--<LinearLayout-->
-        <!--android:orientation="horizontal"-->
-        <!--android:weightSum="2"-->
+    <!--<com.google.android.gms.common.SignInButton-->
+        <!--android:id="@+id/btn_googleSignIn"-->
+        <!--android:layout_centerHorizontal="true"-->
         <!--android:layout_above="@id/txt_rider_app"-->
         <!--android:layout_margin="16dp"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content">-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"></com.google.android.gms.common.SignInButton>-->
 
-        <!--<Button-->
-            <!--android:id="@+id/btn_signIn"-->
-            <!--android:background="@drawable/btn_sign_in_background"-->
-            <!--android:text="sign in"-->
-            <!--android:textColor="@android:color/white"-->
-            <!--android:layout_marginRight="6dp"-->
-            <!--android:layout_weight="1"-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="wrap_content" />-->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:weightSum="2"
+        android:layout_above="@id/txt_rider_app"
+        android:layout_margin="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-        <!--<Button-->
-            <!--android:id="@+id/btn_register"-->
-            <!--android:background="@drawable/btn_register_background"-->
-            <!--android:text="register"-->
-            <!--android:textColor="@android:color/black"-->
-            <!--android:layout_marginLeft="6dp"-->
-            <!--android:layout_weight="1"-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="wrap_content" />-->
-    <!--</LinearLayout>-->
+        <Button
+            android:id="@+id/btn_signIn"
+            android:background="@drawable/btn_sign_in_background"
+            android:text="sign in"
+            android:textColor="@android:color/white"
+            android:layout_marginRight="6dp"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/btn_register"
+            android:background="@drawable/btn_register_background"
+            android:text="register"
+            android:textColor="@android:color/black"
+            android:layout_marginLeft="6dp"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
 
 
